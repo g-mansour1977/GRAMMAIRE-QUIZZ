@@ -1,134 +1,154 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Quiz : Natures et Fonctions des mots</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Quiz Grammaire – Gi.Code Formation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .quiz-box {
-      background: white;
-      width: 700px;
-      max-width: 95%;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 20px;
-      margin-bottom: 15px;
-    }
-
-    .question {
-      font-size: 16px;
-      margin-bottom: 15px;
-    }
-
-    input {
-      width: 90%;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin: 5px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    .feedback {
-      margin: 10px;
-      font-style: italic;
-      font-size: 15px;
-    }
-
-    .good { color: green; }
-    .bad { color: red; }
-  </style>
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f2f4f7;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+.container{
+  background:#fff;
+  width:800px;
+  max-width:95%;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,.15);
+}
+h1{text-align:center;color:#0a3d62;}
+.question{font-size:18px;margin:20px 0;}
+.options button{
+  display:block;
+  width:100%;
+  margin:8px 0;
+  padding:10px;
+  font-size:16px;
+  cursor:pointer;
+}
+.correct{background:#c8f7c5;}
+.wrong{background:#f7c5c5;}
+.score{
+  margin-top:15px;
+  font-size:18px;
+  text-align:center;
+}
+.actions{
+  text-align:center;
+  margin-top:15px;
+}
+.actions button{
+  padding:10px 20px;
+  font-size:15px;
+}
+@media print{
+  .options button,.actions{display:none;}
+}
+</style>
 </head>
+
 <body>
 
-<div class="quiz-box">
-  <h1>📘 Quiz : Natures et Fonctions des mots</h1>
+<div class="container" id="zonePDF">
+<h1>📘 Quiz Grammaire – Gi.Code Formation</h1>
 
-  <div class="question" id="question"></div>
+<div class="question" id="question"></div>
 
-  <input type="text" id="answer" placeholder="Écris ta réponse ici">
+<div class="options" id="options"></div>
 
-  <div>
-    <button onclick="checkAnswer()">✔ Vérifier</button>
-    <button onclick="nextQuestion()">⏭ Question suivante</button>
-  </div>
+<div class="score" id="score"></div>
 
-  <div class="feedback" id="feedback"></div>
+<div class="actions">
+<button onclick="nextQuestion()">⏭ Question suivante</button>
+<button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</div>
+
 </div>
 
 <script>
-  const fichesRevision = [
-    ["Quelle est la nature d’un mot qui désigne une chose ou une personne ?", "Nom"],
-    ["Quelle est la nature d’un mot qui remplace un nom ?", "Pronom"],
-    ["Quelle est la nature d’un mot qui exprime une action ou un état ?", "Verbe"],
-    ["Quelle est la nature d’un mot qui qualifie un nom ?", "Adjectif qualificatif"],
-    ["Quelle est la nature d’un mot qui précise le verbe, l’adjectif ou un autre adverbe ?", "Adverbe"],
-    ["Quelle est la nature d’un mot qui relie deux éléments ?", "Conjonction"],
-    ["Quelle est la nature d’un mot invariable qui introduit un complément ?", "Préposition"],
-    ["Quelle est la nature d’un mot qui sert à exprimer une émotion ou une interpellation ?", "Interjection"],
-    ["Quelle est la fonction du mot qui fait l’action dans une phrase ?", "Sujet"],
-    ["Quelle est la fonction du mot qui reçoit directement l’action du verbe ?", "Complément d’objet direct (COD)"],
-    ["Quelle est la fonction du mot qui précise à qui ou à quoi profite l’action ?", "Complément d’objet indirect (COI)"],
-    ["Quelle est la fonction du mot qui précise le lieu, le temps, la manière, etc. ?", "Complément circonstanciel"],
-    ["Quelle est la fonction du mot qui qualifie un nom ?", "Épithète ou attribut"],
-    ["Quelle est la fonction du mot qui suit un verbe d’état (être, paraître...) ?", "Attribut du sujet"]
-  ];
+const quiz = [
+{
+q:"Quelle est la nature d’un mot qui désigne une chose ou une personne ?",
+options:["Verbe","Nom","Adjectif","Pronom"],
+answer:1
+},
+{
+q:"Quelle est la nature d’un mot qui remplace un nom ?",
+options:["Nom","Conjonction","Pronom","Adverbe"],
+answer:2
+},
+{
+q:"Quelle est la fonction du mot qui fait l’action ?",
+options:["COD","COI","Sujet","Attribut"],
+answer:2
+},
+{
+q:"Quelle est la fonction du mot qui reçoit directement l’action ?",
+options:["COI","Sujet","Complément circonstanciel","COD"],
+answer:3
+},
+{
+q:"Quel mot est invariable ?",
+options:["Nom","Adjectif","Adverbe","Verbe"],
+answer:2
+},
+{
+q:"Quelle est la fonction après un verbe d’état ?",
+options:["COD","Attribut du sujet","COI","Épithète"],
+answer:1
+}
+];
 
-  let index = 0;
+let index=0;
+let score=0;
+let answered=false;
 
-  // Mélange des questions
-  fichesRevision.sort(() => Math.random() - 0.5);
+const questionEl=document.getElementById("question");
+const optionsEl=document.getElementById("options");
+const scoreEl=document.getElementById("score");
 
-  const questionEl = document.getElementById("question");
-  const answerEl = document.getElementById("answer");
-  const feedbackEl = document.getElementById("feedback");
+function showQuestion(){
+answered=false;
+questionEl.textContent="❓ "+quiz[index].q;
+optionsEl.innerHTML="";
+quiz[index].options.forEach((opt,i)=>{
+let btn=document.createElement("button");
+btn.textContent=opt;
+btn.onclick=()=>checkAnswer(btn,i);
+optionsEl.appendChild(btn);
+});
+updateScore();
+}
 
-  function showQuestion() {
-    questionEl.textContent = "❓ " + fichesRevision[index][0];
-    answerEl.value = "";
-    feedbackEl.textContent = "";
-    feedbackEl.className = "feedback";
-  }
+function checkAnswer(btn,i){
+if(answered) return;
+answered=true;
+if(i===quiz[index].answer){
+btn.classList.add("correct");
+score++;
+}else{
+btn.classList.add("wrong");
+optionsEl.children[quiz[index].answer].classList.add("correct");
+}
+updateScore();
+}
 
-  function checkAnswer() {
-    const userAnswer = answerEl.value.trim().toLowerCase();
-    const correctAnswer = fichesRevision[index][1].toLowerCase();
+function nextQuestion(){
+index=(index+1)%quiz.length;
+showQuestion();
+}
 
-    if (userAnswer === correctAnswer) {
-      feedbackEl.textContent = "✅ Bonne réponse !";
-      feedbackEl.classList.add("good");
-    } else {
-      feedbackEl.textContent = "❌ Mauvaise réponse. Réponse attendue : " + fichesRevision[index][1];
-      feedbackEl.classList.add("bad");
-    }
-  }
+function updateScore(){
+scoreEl.textContent=`Score : ${score} / 20`;
+}
 
-  function nextQuestion() {
-    index = (index + 1) % fichesRevision.length;
-    showQuestion();
-  }
-
-  showQuestion();
+showQuestion();
 </script>
 
 </body>
