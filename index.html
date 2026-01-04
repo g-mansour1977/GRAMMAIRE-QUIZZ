@@ -2,153 +2,186 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Quiz Grammaire – Gi.Code Formation</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Examen – Gi.Code Formation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f2f4f7;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-}
-.container{
-  background:#fff;
-  width:800px;
-  max-width:95%;
-  padding:25px;
-  border-radius:12px;
-  box-shadow:0 6px 15px rgba(0,0,0,.15);
-}
-h1{text-align:center;color:#0a3d62;}
-.question{font-size:18px;margin:20px 0;}
-.options button{
-  display:block;
-  width:100%;
-  margin:8px 0;
-  padding:10px;
-  font-size:16px;
-  cursor:pointer;
-}
-.correct{background:#c8f7c5;}
-.wrong{background:#f7c5c5;}
-.score{
-  margin-top:15px;
-  font-size:18px;
-  text-align:center;
-}
-.actions{
-  text-align:center;
-  margin-top:15px;
-}
-.actions button{
-  padding:10px 20px;
-  font-size:15px;
-}
-@media print{
-  .options button,.actions{display:none;}
-}
+  body { background:#f4f6f9; }
+  .quiz-box { max-width:700px; margin:auto; }
+  .timer { font-weight:bold; color:#dc3545; }
 </style>
 </head>
 
 <body>
 
-<div class="container" id="zonePDF">
-<h1>📘 Quiz Grammaire – Gi.Code Formation</h1>
+<div class="container mt-5">
+  <div class="card quiz-box shadow">
+    <div class="card-body" id="app">
+      
+      <!-- LOGIN -->
+      <div id="login">
+        <h4 class="mb-3">🔐 Connexion Élève</h4>
+        <input class="form-control mb-2" id="nom" placeholder="Nom de l'élève">
+        <input class="form-control mb-3" id="classe" placeholder="Classe / Formation">
+        <button class="btn btn-primary w-100" onclick="connexion()">Commencer l'examen</button>
+      </div>
 
-<div class="question" id="question"></div>
+      <!-- QUIZ -->
+      <div id="quiz" style="display:none;">
+        <div class="d-flex justify-content-between mb-2">
+          <span id="progression"></span>
+          <span class="timer">⏱️ <span id="temps"></span></span>
+        </div>
 
-<div class="options" id="options"></div>
+        <h5 id="question"></h5>
+        <div class="d-grid gap-2 mt-3" id="reponses"></div>
+      </div>
 
-<div class="score" id="score"></div>
-
-<div class="actions">
-<button onclick="nextQuestion()">⏭ Question suivante</button>
-<button onclick="window.print()">🖨️ Imprimer / PDF</button>
-</div>
-
+    </div>
+  </div>
 </div>
 
 <script>
-const quiz = [
-{
-q:"Quelle est la nature d’un mot qui désigne une chose ou une personne ?",
-options:["Verbe","Nom","Adjectif","Pronom"],
-answer:1
-},
-{
-q:"Quelle est la nature d’un mot qui remplace un nom ?",
-options:["Nom","Conjonction","Pronom","Adverbe"],
-answer:2
-},
-{
-q:"Quelle est la fonction du mot qui fait l’action ?",
-options:["COD","COI","Sujet","Attribut"],
-answer:2
-},
-{
-q:"Quelle est la fonction du mot qui reçoit directement l’action ?",
-options:["COI","Sujet","Complément circonstanciel","COD"],
-answer:3
-},
-{
-q:"Quel mot est invariable ?",
-options:["Nom","Adjectif","Adverbe","Verbe"],
-answer:2
-},
-{
-q:"Quelle est la fonction après un verbe d’état ?",
-options:["COD","Attribut du sujet","COI","Épithète"],
-answer:1
-}
+// ================= CONFIG =================
+const LIMITE = 30;
+const DUREE_EXAMEN = 15 * 60; // 15 minutes
+
+// ================= QUESTIONS (30) =================
+const questions = [
+  { question: "Quelle est la nature du mot 'école' ?", choix: ["Verbe", "Nom", "Adjectif"], bonne: 1 },
+  { question: "Quel logiciel sert au traitement de texte ?", choix: ["Excel", "Word", "PowerPoint"], bonne: 1 },
+  { question: "2 + 3 x 4 = ?", choix: ["20", "14", "24"], bonne: 1 },
+  { question: "La capitale de la France ?", choix: ["Lyon", "Paris", "Marseille"], bonne: 1 },
+  { question: "HTML signifie ?", choix: ["HyperText Markup Language", "HighText Markup Language", "Hyper Transfer Markup Language"], bonne: 0 },
+  { question: "CSS sert à ?", choix: ["Programmer", "Mettre en forme", "Stocker données"], bonne: 1 },
+  { question: "Quelle est la valeur de Pi ?", choix: ["3.14", "2.71", "1.62"], bonne: 0 },
+  { question: "Quel est l'élément chimique O ?", choix: ["Oxygène", "Or", "Osmium"], bonne: 0 },
+  { question: "Quelle fonction Excel additionne des cellules ?", choix: ["=SOMME()", "=MOYENNE()", "=MULT()"], bonne: 0 },
+  { question: "Quelle touche permet de copier ?", choix: ["Ctrl + C", "Ctrl + V", "Ctrl + X"], bonne: 0 },
+  { question: "Le moteur de recherche le plus utilisé ?", choix: ["Bing", "Google", "Yahoo"], bonne: 1 },
+  { question: "Quelle langue est utilisée côté client sur le web ?", choix: ["Python", "JavaScript", "PHP"], bonne: 1 },
+  { question: "Quel pays est surnommé 'Le pays du Soleil Levant' ?", choix: ["Chine", "Japon", "Corée"], bonne: 1 },
+  { question: "Résultat de 7 x 8 ?", choix: ["54", "56", "58"], bonne: 1 },
+  { question: "Quel est le pluriel de 'cheval' ?", choix: ["Chevals", "Chevaux", "Chevales"], bonne: 1 },
+  { question: "Word permet de :", choix: ["Créer des tableaux uniquement", "Créer du texte et documents", "Créer des calculs"], bonne: 1 },
+  { question: "PowerPoint sert à :", choix: ["Faire des diapos", "Gérer des bases de données", "Programmer"], bonne: 0 },
+  { question: "L'eau gèle à ?", choix: ["0°C", "100°C", "-10°C"], bonne: 0 },
+  { question: "Le symbole chimique du fer ?", choix: ["Fe", "F", "Fr"], bonne: 0 },
+  { question: "Le verbe 'manger' est à quel groupe ?", choix: ["1er", "2e", "3e"], bonne: 0 },
+  { question: "Quel est l'équivalent de 1 km ?", choix: ["100 m", "1000 m", "10 000 m"], bonne: 1 },
+  { question: "Quelle planète est la plus proche du Soleil ?", choix: ["Mercure", "Vénus", "Mars"], bonne: 0 },
+  { question: "Combien de côtés a un hexagone ?", choix: ["5", "6", "8"], bonne: 1 },
+  { question: "Quelle est la couleur du ciel sans nuage ?", choix: ["Bleu", "Vert", "Rouge"], bonne: 0 },
+  { question: "Python est un langage :", choix: ["De programmation", "Naturel", "Musical"], bonne: 0 },
+  { question: "Résultat de 12 ÷ 4 ?", choix: ["2", "3", "4"], bonne: 1 },
+  { question: "HTML est utilisé pour :", choix: ["Programmer", "Structurer une page web", "Envoyer des emails"], bonne: 1 },
+  { question: "CSS signifie ?", choix: ["Cascading Style Sheets", "Creative Style Sheets", "Colorful Style Sheets"], bonne: 0 },
+  { question: "Combien y a-t-il de continents ?", choix: ["5", "6", "7"], bonne: 2 },
+  { question: "Quelle est la monnaie officielle du Sénégal ?", choix: ["CFA", "Euro", "Dollar"], bonne: 0 },
+  { question: "Le Soleil est une :", choix: ["Étoile", "Planète", "Comète"], bonne: 0 }
 ];
 
-let index=0;
-let score=0;
-let answered=false;
+// ================= VARIABLES =================
+let index = 0;
+let score = 0;
+let timer = DUREE_EXAMEN;
+let interval;
+let eleve = {};
 
-const questionEl=document.getElementById("question");
-const optionsEl=document.getElementById("options");
-const scoreEl=document.getElementById("score");
+// ================= CONNEXION =================
+function connexion() {
+  const nom = document.getElementById("nom").value;
+  const classe = document.getElementById("classe").value;
 
-function showQuestion(){
-answered=false;
-questionEl.textContent="❓ "+quiz[index].q;
-optionsEl.innerHTML="";
-quiz[index].options.forEach((opt,i)=>{
-let btn=document.createElement("button");
-btn.textContent=opt;
-btn.onclick=()=>checkAnswer(btn,i);
-optionsEl.appendChild(btn);
-});
-updateScore();
+  if (!nom || !classe) return alert("Veuillez remplir tous les champs");
+
+  eleve = { nom, classe, date: new Date().toLocaleDateString() };
+  localStorage.setItem("eleve", JSON.stringify(eleve));
+
+  document.getElementById("login").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+
+  demarrerTimer();
+  afficherQuestion();
 }
 
-function checkAnswer(btn,i){
-if(answered) return;
-answered=true;
-if(i===quiz[index].answer){
-btn.classList.add("correct");
-score++;
-}else{
-btn.classList.add("wrong");
-optionsEl.children[quiz[index].answer].classList.add("correct");
-}
-updateScore();
+// ================= TIMER =================
+function demarrerTimer() {
+  afficherTemps();
+  interval = setInterval(() => {
+    timer--;
+    afficherTemps();
+    if (timer <= 0) finQuiz();
+  }, 1000);
 }
 
-function nextQuestion(){
-index=(index+1)%quiz.length;
-showQuestion();
+function afficherTemps() {
+  const min = Math.floor(timer / 60);
+  const sec = timer % 60;
+  document.getElementById("temps").innerText =
+    `${min}:${sec.toString().padStart(2,"0")}`;
 }
 
-function updateScore(){
-scoreEl.textContent=`Score : ${score} / 20`;
+// ================= QUIZ =================
+function afficherQuestion() {
+
+  if (index >= LIMITE) {
+    finQuiz();
+    return;
+  }
+
+  const q = questions[index];
+
+  document.getElementById("progression").innerText =
+    `Question ${index+1} / ${LIMITE}`;
+
+  document.getElementById("question").innerText = q.question;
+
+  const zone = document.getElementById("reponses");
+  zone.innerHTML = "";
+
+  q.choix.forEach((c,i)=>{
+    const b = document.createElement("button");
+    b.className = "btn btn-outline-primary";
+    b.innerText = c;
+    b.onclick = ()=>verifier(i);
+    zone.appendChild(b);
+  });
 }
 
-showQuestion();
+function verifier(rep) {
+  if (rep === questions[index].bonne) score++;
+  index++;
+  afficherQuestion();
+}
+
+// ================= FIN =================
+function finQuiz() {
+  clearInterval(interval);
+
+  const note20 = Math.round((score / LIMITE) * 20);
+
+  document.getElementById("app").innerHTML = `
+    <h3 class="text-success">📊 Résultat de l'examen</h3>
+
+    <p><strong>Nom :</strong> ${eleve.nom}</p>
+    <p><strong>Classe :</strong> ${eleve.classe}</p>
+    <p><strong>Date :</strong> ${eleve.date}</p>
+
+    <hr>
+
+    <p class="fs-4">Score : <strong>${note20} / 20</strong></p>
+
+    <div class="alert alert-info">
+      ${note20 >= 15 ? "✅ Très bon niveau" : note20 >= 10 ? "⚠️ Niveau moyen" : "❌ Niveau à renforcer"}
+    </div>
+
+    <button class="btn btn-success me-2" onclick="window.print()">🖨️ Imprimer PDF</button>
+    <button class="btn btn-secondary" onclick="location.reload()">🔄 Recommencer</button>
+  `;
+}
 </script>
 
 </body>
